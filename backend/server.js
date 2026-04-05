@@ -18,6 +18,13 @@ app.use(cors({
 app.use(express.json());
 app.use(requestLogger); // Log all API requests and responses
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Issue2Action API is running 🚀"
+  });
+});
+
 // Global InsForge readiness guard — returns 503 if SDK not yet initialized
 app.use('/api', (req, res, next) => {
   // Allow health check to always pass
