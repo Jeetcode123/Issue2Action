@@ -1,0 +1,105 @@
+﻿
+[1m[34mΓòöΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòù[0m
+[1m[34mΓòæ   Issue2Action ΓÇö Production Test Suite            Γòæ[0m
+[1m[34mΓòÜΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓò¥[0m
+[2m  Target: http://localhost:3001[0m
+[2m  Time:   2026-04-04T18:43:04.838Z[0m
+
+[1m[36mΓöüΓöüΓöü 1. Health Check ΓöüΓöüΓöü[0m
+  [32mΓ£ô[0m GET /api/health returns ok [2m(88ms)[0m
+
+[1m[36mΓöüΓöüΓöü 2. Authentication ΓöüΓöüΓöü[0m
+  [31mΓ£ù[0m POST /api/auth/signup creates a user [2m(2553ms)[0m
+    [31mΓåÆ No userId returned from signup[0m
+  [31mΓ£ù[0m POST /api/auth/login works [2m(639ms)[0m
+    [31mΓåÆ Login failed: Email verification required[0m
+  [32mΓ£ô[0m POST /api/auth/signup rejects missing password [2m(3ms)[0m
+
+[1m[36mΓöüΓöüΓöü 3. Issue Submission ΓöüΓöüΓöü[0m
+  [31mΓ£ù[0m POST /api/issues/create submits an issue [2m(0ms)[0m
+    [31mΓåÆ Test user required ΓÇö signup/login must pass[0m
+  [31mΓ£ù[0m Issue creation returns AI confidence score [2m(592ms)[0m
+    [31mΓåÆ Failed to fetch issue: Issue not found[0m
+  [32mΓ£ô[0m POST /api/issues/create rejects missing fields [2m(2ms)[0m
+
+[1m[36mΓöüΓöüΓöü 4. AI Classification (verified through issue data) ΓöüΓöüΓöü[0m
+  [31mΓ£ù[0m Issue has valid type classification [2m(524ms)[0m
+    [31mΓåÆ Fetch failed: Issue not found[0m
+  [31mΓ£ù[0m Issue has priority correctly assigned [2m(384ms)[0m
+    [31mΓåÆ Invalid priority: undefined[0m
+
+[1m[36mΓöüΓöüΓöü 5. Authority Routing ΓöüΓöüΓöü[0m
+  [31mΓ£ù[0m Issue is assigned to a department [2m(416ms)[0m
+    [31mΓåÆ Department should be assigned by AI routing[0m
+  [32mΓ£ô[0m GET /api/admin/authorities returns authority list [2m(486ms)[0m
+
+[1m[36mΓöüΓöüΓöü 6. Email Dispatch ΓöüΓöüΓöü[0m
+  [31mΓ£ù[0m Email log exists for the created issue [2m(5724ms)[0m
+    [31mΓåÆ Fetch failed: Issue not found[0m
+
+[1m[36mΓöüΓöüΓöü 7. Status Tracking ΓöüΓöüΓöü[0m
+  [31mΓ£ù[0m GET /api/issues/:id returns full issue with timeline [2m(516ms)[0m
+    [31mΓåÆ Fetch failed: Issue not found[0m
+  [32mΓ£ô[0m PATCH /api/issues/:id/status updates status [2m(2485ms)[0m
+  [31mΓ£ù[0m Issue reflects updated status [2m(388ms)[0m
+    [31mΓåÆ Expected in_progress, got: undefined[0m
+  [32mΓ£ô[0m PATCH status rejects missing fields [2m(2ms)[0m
+
+[1m[36mΓöüΓöüΓöü 8. Duplicate Detection & Merge ΓöüΓöüΓöü[0m
+  [31mΓ£ù[0m Submitting a similar issue triggers duplicate detection [2m(0ms)[0m
+    [31mΓåÆ Test user required[0m
+
+[1m[36mΓöüΓöüΓöü 9. Notifications Pipeline ΓöüΓöüΓöü[0m
+  [31mΓ£ù[0m Notifications were created for the user [2m(0ms)[0m
+    [31mΓåÆ Test user required[0m
+  [32mΓ£ô[0m Unread count matches actual unread notifications [2m(878ms)[0m
+    [33mΓÜá No notifications to test marking[0m
+  [32mΓ£ô[0m Mark notification as read works [2m(400ms)[0m
+  [32mΓ£ô[0m Mark all notifications as read works [2m(800ms)[0m
+
+[1m[36mΓöüΓöüΓöü 10. Error Recovery & Edge Cases ΓöüΓöüΓöü[0m
+  [32mΓ£ô[0m GET /api/issues/NONEXISTENT returns 404 [2m(361ms)[0m
+  [32mΓ£ô[0m POST to unknown route returns 404 [2m(1ms)[0m
+  [32mΓ£ô[0m POST /api/issues/create with malformed body returns 400 [2m(2ms)[0m
+  [32mΓ£ô[0m GET /api/users/invalid-user/notifications handles gracefully [2m(436ms)[0m
+  [32mΓ£ô[0m GET /api/admin/logs returns recent logs [2m(1ms)[0m
+
+[1m[36mΓöüΓöüΓöü 11. Public & User APIs ΓöüΓöüΓöü[0m
+  [32mΓ£ô[0m GET /api/issues/public returns issues [2m(400ms)[0m
+  [31mΓ£ù[0m GET /api/users/:userId/issues returns user issues [2m(0ms)[0m
+    [31mΓåÆ Test user required[0m
+
+[1m[34mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+  [41m[37m[1m  13/28 TESTS FAILED  [0m [32m15 passed[0m [2m(avg 646ms)[0m
+
+  [31m[1mFailed tests:[0m
+    [31mΓ£ù POST /api/auth/signup creates a user[0m
+      [2mNo userId returned from signup[0m
+    [31mΓ£ù POST /api/auth/login works[0m
+      [2mLogin failed: Email verification required[0m
+    [31mΓ£ù POST /api/issues/create submits an issue[0m
+      [2mTest user required ΓÇö signup/login must pass[0m
+    [31mΓ£ù Issue creation returns AI confidence score[0m
+      [2mFailed to fetch issue: Issue not found[0m
+    [31mΓ£ù Issue has valid type classification[0m
+      [2mFetch failed: Issue not found[0m
+    [31mΓ£ù Issue has priority correctly assigned[0m
+      [2mInvalid priority: undefined[0m
+    [31mΓ£ù Issue is assigned to a department[0m
+      [2mDepartment should be assigned by AI routing[0m
+    [31mΓ£ù Email log exists for the created issue[0m
+      [2mFetch failed: Issue not found[0m
+    [31mΓ£ù GET /api/issues/:id returns full issue with timeline[0m
+      [2mFetch failed: Issue not found[0m
+    [31mΓ£ù Issue reflects updated status[0m
+      [2mExpected in_progress, got: undefined[0m
+    [31mΓ£ù Submitting a similar issue triggers duplicate detection[0m
+      [2mTest user required[0m
+    [31mΓ£ù Notifications were created for the user[0m
+      [2mTest user required[0m
+    [31mΓ£ù GET /api/users/:userId/issues returns user issues[0m
+      [2mTest user required[0m
+[1m[34mΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ[0m
+
+[2mReport saved to: C:\Users\JEET DUTTA\Downloads\issue2action\backend\test-reports\test-report-1775328202921.json[0m
+

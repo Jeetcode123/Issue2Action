@@ -1,0 +1,19 @@
+{
+  "name": "issue2action-backend",
+  "version": "1.0.0",
+  "description": "Express backend for Issue2Action",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node tests/e2e.test.js",
+    "test:e2e": "node tests/e2e.test.js"
+  },
+  "dependencies": {
+    "@insforge/sdk": "^1.2.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "nodemailer": "^8.0.4"
+  }
+}

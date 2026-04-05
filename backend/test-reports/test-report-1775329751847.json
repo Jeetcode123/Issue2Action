@@ -1,0 +1,171 @@
+{
+  "timestamp": "2026-04-04T19:09:11.847Z",
+  "target": "http://localhost:3001",
+  "summary": {
+    "passed": 15,
+    "failed": 14,
+    "total": 29,
+    "avgMs": 414
+  },
+  "tests": [
+    {
+      "name": "GET /api/health returns ok",
+      "status": "PASS",
+      "ms": 58
+    },
+    {
+      "name": "POST /api/auth/signup creates a user",
+      "status": "PASS",
+      "ms": 230
+    },
+    {
+      "name": "POST /api/auth/login works",
+      "status": "PASS",
+      "ms": 5
+    },
+    {
+      "name": "Fallback: Get existing user from database",
+      "status": "FAIL",
+      "ms": 2,
+      "error": "Could not find any existing user in the system — create one manually first"
+    },
+    {
+      "name": "POST /api/auth/signup rejects missing password",
+      "status": "PASS",
+      "ms": 2
+    },
+    {
+      "name": "POST /api/issues/create submits an issue",
+      "status": "FAIL",
+      "ms": 0,
+      "error": "Test user required — signup/login must pass"
+    },
+    {
+      "name": "Issue creation returns AI confidence score",
+      "status": "FAIL",
+      "ms": 2,
+      "error": "Failed to fetch issue: fetch failed"
+    },
+    {
+      "name": "POST /api/issues/create rejects missing fields",
+      "status": "FAIL",
+      "ms": 2,
+      "error": "Expected missing fields error, got: fetch failed"
+    },
+    {
+      "name": "Issue has valid type classification",
+      "status": "FAIL",
+      "ms": 3,
+      "error": "Fetch failed: fetch failed"
+    },
+    {
+      "name": "Issue has priority correctly assigned",
+      "status": "FAIL",
+      "ms": 3,
+      "error": "Invalid priority: undefined"
+    },
+    {
+      "name": "Issue is assigned to a department",
+      "status": "FAIL",
+      "ms": 2,
+      "error": "Department should be assigned by AI routing"
+    },
+    {
+      "name": "GET /api/admin/authorities returns authority list",
+      "status": "FAIL",
+      "ms": 2,
+      "error": "Failed: fetch failed"
+    },
+    {
+      "name": "Email log exists for the created issue",
+      "status": "FAIL",
+      "ms": 4453,
+      "error": "Fetch failed: Issue not found"
+    },
+    {
+      "name": "GET /api/issues/:id returns full issue with timeline",
+      "status": "FAIL",
+      "ms": 384,
+      "error": "Fetch failed: Issue not found"
+    },
+    {
+      "name": "PATCH /api/issues/:id/status updates status",
+      "status": "PASS",
+      "ms": 2565
+    },
+    {
+      "name": "Issue reflects updated status",
+      "status": "FAIL",
+      "ms": 410,
+      "error": "Expected in_progress, got: undefined"
+    },
+    {
+      "name": "PATCH status rejects missing fields",
+      "status": "PASS",
+      "ms": 2
+    },
+    {
+      "name": "Submitting a similar issue triggers duplicate detection",
+      "status": "FAIL",
+      "ms": 0,
+      "error": "Test user required"
+    },
+    {
+      "name": "Notifications were created for the user",
+      "status": "FAIL",
+      "ms": 0,
+      "error": "Test user required"
+    },
+    {
+      "name": "Unread count matches actual unread notifications",
+      "status": "PASS",
+      "ms": 957
+    },
+    {
+      "name": "Mark notification as read works",
+      "status": "PASS",
+      "ms": 382
+    },
+    {
+      "name": "Mark all notifications as read works",
+      "status": "PASS",
+      "ms": 1424
+    },
+    {
+      "name": "GET /api/issues/NONEXISTENT returns 404",
+      "status": "PASS",
+      "ms": 379
+    },
+    {
+      "name": "POST to unknown route returns 404",
+      "status": "PASS",
+      "ms": 2
+    },
+    {
+      "name": "POST /api/issues/create with malformed body returns 400",
+      "status": "PASS",
+      "ms": 2
+    },
+    {
+      "name": "GET /api/users/invalid-user/notifications handles gracefully",
+      "status": "PASS",
+      "ms": 351
+    },
+    {
+      "name": "GET /api/admin/logs returns recent logs",
+      "status": "PASS",
+      "ms": 3
+    },
+    {
+      "name": "GET /api/issues/public returns issues",
+      "status": "PASS",
+      "ms": 381
+    },
+    {
+      "name": "GET /api/users/:userId/issues returns user issues",
+      "status": "FAIL",
+      "ms": 1,
+      "error": "Test user required"
+    }
+  ]
+}

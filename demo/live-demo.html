@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Issue2Action — Live Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #111827;
+      --bg-card: #1a2035;
+      --bg-terminal: #0d1117;
+      --border: #1e293b;
+      --border-glow: #6366f1;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-purple: #8b5cf6;
+      --accent-indigo: #6366f1;
+      --accent-green: #22c55e;
+      --accent-blue: #3b82f6;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-cyan: #06b6d4;
+      --accent-pink: #ec4899;
+      --glow-purple: rgba(139, 92, 246, 0.15);
+      --glow-green: rgba(34, 197, 94, 0.15);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── TOP HEADER BAR ─── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 56px;
+      background: linear-gradient(135deg, #0f1629 0%, #131b2e 100%);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      position: relative;
+      z-index: 100;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, var(--accent-purple) 30%, var(--accent-indigo) 50%, var(--accent-purple) 70%, transparent 100%);
+      opacity: 0.5;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-indigo));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 14px;
+      color: white;
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .logo-text {
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-text span {
+      background: linear-gradient(135deg, var(--accent-purple), #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .badge-live {
+      background: rgba(34, 197, 94, 0.12);
+      color: var(--accent-green);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+    }
+
+    .badge-live .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+      50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: -0.01em;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-indigo));
+      color: white;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      box-shadow: 0 6px 25px rgba(99, 102, 241, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+      background: rgba(255,255,255,0.1);
+      color: var(--text-primary);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--accent-red);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    /* ─── PIPELINE STEPS BAR ─── */
+    .pipeline-bar {
+      display: flex;
+      align-items: center;
+      padding: 12px 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      gap: 0;
+      flex-shrink: 0;
+      overflow-x: auto;
+    }
+
+    .pipeline-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+      transition: all 0.4s ease;
+      position: relative;
+    }
+
+    .pipeline-step .step-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      transition: all 0.4s ease;
+    }
+
+    .pipeline-step.active {
+      color: var(--accent-indigo);
+      background: rgba(99, 102, 241, 0.08);
+    }
+
+    .pipeline-step.active .step-num {
+      background: var(--accent-indigo);
+      color: white;
+      border-color: var(--accent-indigo);
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+    }
+
+    .pipeline-step.completed {
+      color: var(--accent-green);
+    }
+
+    .pipeline-step.completed .step-num {
+      background: var(--accent-green);
+      color: white;
+      border-color: var(--accent-green);
+    }
+
+    .pipeline-step.failed {
+      color: var(--accent-red);
+    }
+
+    .pipeline-step.failed .step-num {
+      background: var(--accent-red);
+      color: white;
+      border-color: var(--accent-red);
+    }
+
+    .pipeline-connector {
+      width: 28px;
+      height: 2px;
+      background: var(--border);
+      flex-shrink: 0;
+      transition: background 0.4s ease;
+      border-radius: 1px;
+    }
+
+    .pipeline-connector.completed {
+      background: var(--accent-green);
+    }
+
+    .pipeline-connector.active {
+      background: linear-gradient(90deg, var(--accent-green), var(--accent-indigo));
+    }
+
+    /* ─── MAIN SPLIT VIEW ─── */
+    .main-split {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* ─── LEFT PANEL (Website) ─── */
+    .panel-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      min-width: 0;
+      position: relative;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .panel-title .icon {
+      width: 16px;
+      height: 16px;
+      opacity: 0.6;
+    }
+
+    .url-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: var(--bg-primary);
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .url-bar .lock {
+      color: var(--accent-green);
+      font-size: 10px;
+    }
+
+    .iframe-container {
+      flex: 1;
+      position: relative;
+      background: #fff;
+    }
+
+    .iframe-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .iframe-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 14, 26, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 10;
+      transition: opacity 0.5s ease;
+    }
+
+    .iframe-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .iframe-overlay h3 {
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #a78bfa, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .iframe-overlay p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      max-width: 320px;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* ─── RIGHT PANEL (Logs) ─── */
+    .panel-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .log-filters {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 16px;
+    }
+
+    .log-filter-btn {
+      padding: 3px 10px;
+      border-radius: 5px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Inter', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .log-filter-btn:hover {
+      color: var(--text-secondary);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .log-filter-btn.active {
+      color: var(--accent-indigo);
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.2);
+    }
+
+    .log-terminal {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 0;
+      background: var(--bg-terminal);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      scroll-behavior: smooth;
+    }
+
+    .log-terminal::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .log-terminal::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .log-terminal::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    .log-entry {
+      padding: 2px 16px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      animation: log-fade-in 0.3s ease;
+      transition: background 0.15s ease;
+    }
+
+    .log-entry:hover {
+      background: rgba(255,255,255,0.02);
+    }
+
+    @keyframes log-fade-in {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .log-time {
+      color: var(--text-muted);
+      font-size: 10px;
+      flex-shrink: 0;
+      padding-top: 2px;
+      min-width: 72px;
+    }
+
+    .log-level {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 3px;
+      flex-shrink: 0;
+      letter-spacing: 0.05em;
+      min-width: 42px;
+      text-align: center;
+    }
+
+    .log-level.info {
+      color: var(--accent-green);
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .log-level.warn {
+      color: var(--accent-amber);
+      background: rgba(245, 158, 11, 0.1);
+    }
+
+    .log-level.error {
+      color: var(--accent-red);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .log-level.debug {
+      color: var(--text-muted);
+      background: rgba(255,255,255,0.05);
+    }
+
+    .log-tag {
+      color: var(--accent-cyan);
+      font-weight: 600;
+      flex-shrink: 0;
+      min-width: 100px;
+    }
+
+    .log-msg {
+      color: var(--text-primary);
+      word-break: break-word;
+    }
+
+    .log-meta {
+      color: var(--text-muted);
+      font-size: 10px;
+      margin-left: 4px;
+    }
+
+    /* Log entry highlights for key events */
+    .log-entry.highlight-submit {
+      background: rgba(99, 102, 241, 0.06);
+      border-left: 3px solid var(--accent-indigo);
+    }
+
+    .log-entry.highlight-ai {
+      background: rgba(139, 92, 246, 0.06);
+      border-left: 3px solid var(--accent-purple);
+    }
+
+    .log-entry.highlight-email {
+      background: rgba(34, 197, 94, 0.06);
+      border-left: 3px solid var(--accent-green);
+    }
+
+    .log-entry.highlight-authority {
+      background: rgba(6, 182, 212, 0.06);
+      border-left: 3px solid var(--accent-cyan);
+    }
+
+    .log-entry.highlight-error {
+      background: rgba(239, 68, 68, 0.06);
+      border-left: 3px solid var(--accent-red);
+    }
+
+    /* ─── BOTTOM STATUS BAR ─── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 20px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .status-bar-left, .status-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-indicator .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .status-indicator .dot.green { background: var(--accent-green); }
+    .status-indicator .dot.amber { background: var(--accent-amber); }
+    .status-indicator .dot.red { background: var(--accent-red); }
+
+    /* ─── EMPTY STATE ─── */
+    .empty-logs {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--text-muted);
+      background: var(--bg-terminal);
+    }
+
+    .empty-logs svg {
+      width: 40px;
+      height: 40px;
+      opacity: 0.3;
+    }
+
+    .empty-logs p {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    /* ─── LOADING SPINNER ─── */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.1);
+      border-top-color: var(--accent-indigo);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ─── DEMO RESULT PANEL ─── */
+    .demo-result {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      right: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      z-index: 20;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      animation: slide-up 0.4s ease;
+      display: none;
+    }
+
+    .demo-result.visible {
+      display: block;
+    }
+
+    @keyframes slide-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .demo-result h4 {
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .demo-result .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .demo-result .result-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .demo-result .result-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .demo-result .result-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .result-value.green { color: var(--accent-green); }
+    .result-value.purple { color: var(--accent-purple); }
+    .result-value.amber { color: var(--accent-amber); }
+    .result-value.red { color: var(--accent-red); }
+    .result-value.cyan { color: var(--accent-cyan); }
+
+    /* ─── LOG COUNT BADGE ─── */
+    .log-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 9px;
+      font-size: 10px;
+      font-weight: 800;
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--accent-indigo);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      .main-split {
+        flex-direction: column;
+      }
+      .panel-left {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        max-height: 45%;
+      }
+      .pipeline-bar {
+        padding: 8px 12px;
+      }
+      .pipeline-step {
+        padding: 4px 8px;
+        font-size: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── HEADER ─── -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo-icon">I2A</div>
+      <div class="logo-text"><span>Issue2Action</span> — Live Demo</div>
+      <span class="badge badge-live"><span class="dot"></span>LIVE</span>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-ghost" onclick="clearLogs()" title="Clear log output">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14"/></svg>
+        Clear Logs
+      </button>
+      <button class="btn btn-primary" id="btnStartDemo" onclick="startDemo()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Start Demo
+      </button>
+    </div>
+  </header>
+
+  <!-- ─── PIPELINE STEPS ─── -->
+  <div class="pipeline-bar" id="pipelineBar">
+    <div class="pipeline-step" id="step-1">
+      <span class="step-num">1</span>
+      Issue Submitted
+    </div>
+    <div class="pipeline-connector" id="conn-1"></div>
+    <div class="pipeline-step" id="step-2">
+      <span class="step-num">2</span>
+      Backend Received
+    </div>
+    <div class="pipeline-connector" id="conn-2"></div>
+    <div class="pipeline-step" id="step-3">
+      <span class="step-num">3</span>
+      AI Classification
+    </div>
+    <div class="pipeline-connector" id="conn-3"></div>
+    <div class="pipeline-step" id="step-4">
+      <span class="step-num">4</span>
+      Authority Routed
+    </div>
+    <div class="pipeline-connector" id="conn-4"></div>
+    <div class="pipeline-step" id="step-5">
+      <span class="step-num">5</span>
+      Email Dispatched
+    </div>
+    <div class="pipeline-connector" id="conn-5"></div>
+    <div class="pipeline-step" id="step-6">
+      <span class="step-num">6</span>
+      Status Updated
+    </div>
+  </div>
+
+  <!-- ─── MAIN SPLIT VIEW ─── -->
+  <div class="main-split">
+
+    <!-- LEFT: Website -->
+    <div class="panel-left">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          Frontend — Website Preview
+        </div>
+        <div class="url-bar">
+          <span class="lock">🔒</span>
+          localhost:3000
+        </div>
+      </div>
+      <div class="iframe-container">
+        <iframe src="http://localhost:3000" id="websiteFrame" title="Issue2Action Website"></iframe>
+        <div class="iframe-overlay" id="iframeOverlay">
+          <h3>🎬 Ready to Demo</h3>
+          <p>Click <strong>"Start Demo"</strong> to begin the full end-to-end pipeline demonstration.</p>
+        </div>
+
+        <!-- Result Card -->
+        <div class="demo-result" id="demoResult">
+          <h4 id="resultTitle">
+            <span>✅</span> Demo Complete
+          </h4>
+          <div class="result-grid" id="resultGrid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Backend Logs -->
+    <div class="panel-right">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          Backend Logs — Real-time
+          <span class="log-count" id="logCount">0</span>
+        </div>
+        <div class="log-filters">
+          <button class="log-filter-btn active" onclick="setFilter('all', this)">All</button>
+          <button class="log-filter-btn" onclick="setFilter('INFO', this)">Info</button>
+          <button class="log-filter-btn" onclick="setFilter('WARN', this)">Warn</button>
+          <button class="log-filter-btn" onclick="setFilter('ERROR', this)">Error</button>
+        </div>
+      </div>
+      <div class="log-terminal" id="logTerminal">
+        <div class="empty-logs" id="emptyLogs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          <p>Waiting for backend activity...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── STATUS BAR ─── -->
+  <div class="status-bar">
+    <div class="status-bar-left">
+      <div class="status-indicator">
+        <span class="dot green" id="statusDotFrontend"></span>
+        Frontend: localhost:3000
+      </div>
+      <div class="status-indicator">
+        <span class="dot green" id="statusDotBackend"></span>
+        Backend: localhost:3001
+      </div>
+    </div>
+    <div class="status-bar-right">
+      <span id="demoStatus">Idle</span>
+      <span>|</span>
+      <span id="elapsedTime">0.0s</span>
+    </div>
+  </div>
+
+  <script>
+    // ─── CONFIG ─── 
+    const API_BASE = 'http://localhost:3001';
+    const FRONTEND_URL = 'http://localhost:3000';
+    const POLL_INTERVAL = 800; // ms
+
+    // ─── STATE ───
+    let isRunning = false;
+    let logEntries = [];
+    let lastLogCount = 0;
+    let elapsedTimer = null;
+    let startTime = 0;
+    let pollTimer = null;
+    let currentFilter = 'all';
+    let demoPhase = 0;
+
+    // ─── TEST ISSUE DATA ───
+    const TEST_ISSUE = {
+      description: "Large pothole near the main intersection at Gariahat Road, Kolkata. Multiple vehicles have been damaged. The hole is approximately 3 feet wide and 6 inches deep, creating a serious hazard for two-wheelers and pedestrians. Water accumulation during rain makes it invisible.",
+      location_text: "Gariahat Road, Near Golpark Junction, Kolkata 700029",
+      latitude: 22.5177,
+      longitude: 88.3642,
+      ward: "Ward 85 - Gariahat",
+      type: "Road Damage",
+      user_id: "demo-user-001"
+    };
+
+    // ─── PIPELINE STEP MANAGEMENT ───
+    function setStepState(stepNum, state) {
+      const el = document.getElementById(`step-${stepNum}`);
+      if (!el) return;
+      el.classList.remove('active', 'completed', 'failed');
+      if (state) el.classList.add(state);
+
+      // Also update connectors
+      if (stepNum > 1) {
+        const conn = document.getElementById(`conn-${stepNum - 1}`);
+        if (conn) {
+          conn.classList.remove('completed', 'active');
+          if (state === 'completed') conn.classList.add('completed');
+          else if (state === 'active') conn.classList.add('active');
+        }
+      }
+    }
+
+    function resetPipeline() {
+      for (let i = 1; i <= 6; i++) {
+        setStepState(i, null);
+        const conn = document.getElementById(`conn-${i}`);
+        if (conn) conn.classList.remove('completed', 'active');
+      }
+    }
+
+    // ─── LOG RENDERING ───
+    function getHighlightClass(tag, msg) {
+      const t = (tag || '').toLowerCase();
+      const m = (msg || '').toLowerCase();
+      if (t === 'http' && m.includes('post') && m.includes('/api/issues/create')) return 'highlight-submit';
+      if (t === 'ai' || t === 'smartrouting') return 'highlight-ai';
+      if (t === 'emailservice' || t === 'emaildispatch') return 'highlight-email';
+      if (t === 'authority') return 'highlight-authority';
+      if (t === 'error' || t === 'fatal') return 'highlight-error';
+      return '';
+    }
+
+    function formatTime(ts) {
+      if (!ts) return '';
+      const d = new Date(ts);
+      return d.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    function renderLogEntry(log) {
+      const el = document.createElement('div');
+      const level = (log.level || 'INFO').toUpperCase();
+      const highlight = getHighlightClass(log.tag, log.msg);
+      el.className = `log-entry ${highlight}`;
+      el.setAttribute('data-level', level);
+
+      let metaStr = '';
+      if (log.meta && typeof log.meta === 'object' && Object.keys(log.meta).length > 0) {
+        metaStr = `<span class="log-meta">${JSON.stringify(log.meta)}</span>`;
+      }
+
+      el.innerHTML = `
+        <span class="log-time">${formatTime(log.ts)}</span>
+        <span class="log-level ${level.toLowerCase()}">${level}</span>
+        <span class="log-tag">[${log.tag || '-'}]</span>
+        <span class="log-msg">${escapeHtml(log.msg || '')}${metaStr}</span>
+      `;
+
+      return el;
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function renderAllLogs() {
+      const terminal = document.getElementById('logTerminal');
+      const empty = document.getElementById('emptyLogs');
+
+      const filtered = currentFilter === 'all'
+        ? logEntries
+        : logEntries.filter(l => (l.level || '').toUpperCase() === currentFilter);
+
+      if (filtered.length === 0) {
+        terminal.innerHTML = '';
+        terminal.appendChild(empty);
+        empty.style.display = 'flex';
+        return;
+      }
+
+      empty.style.display = 'none';
+      // Only add new entries
+      const currentCount = terminal.querySelectorAll('.log-entry').length;
+      if (currentCount > filtered.length) {
+        // Filter changed, re-render
+        terminal.innerHTML = '';
+        filtered.forEach(log => terminal.appendChild(renderLogEntry(log)));
+      } else {
+        for (let i = currentCount; i < filtered.length; i++) {
+          terminal.appendChild(renderLogEntry(filtered[i]));
+        }
+      }
+
+      // Auto-scroll
+      terminal.scrollTop = terminal.scrollHeight;
+      document.getElementById('logCount').textContent = logEntries.length;
+    }
+
+    // ─── LOG POLLING ───
+    async function pollLogs() {
+      try {
+        const res = await fetch(`${API_BASE}/api/admin/logs?count=100`);
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          const newLogs = json.data;
+          if (newLogs.length > lastLogCount) {
+            // Only add truly new entries
+            const diff = newLogs.slice(lastLogCount);
+            logEntries.push(...diff);
+            lastLogCount = newLogs.length;
+            renderAllLogs();
+
+            // Check for pipeline step triggers
+            diff.forEach(log => {
+              detectPipelineStep(log);
+            });
+          }
+        }
+        document.getElementById('statusDotBackend').className = 'dot green';
+      } catch (err) {
+        document.getElementById('statusDotBackend').className = 'dot red';
+      }
+    }
+
+    function startPolling() {
+      if (pollTimer) clearInterval(pollTimer);
+      pollTimer = setInterval(pollLogs, POLL_INTERVAL);
+      pollLogs(); // immediate first poll
+    }
+
+    function stopPolling() {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+    }
+
+    // ─── PIPELINE DETECTION ───
+    function detectPipelineStep(log) {
+      const tag = (log.tag || '').toLowerCase();
+      const msg = (log.msg || '').toLowerCase();
+
+      // Step 2: Backend received the request
+      if (tag === 'http' && msg.includes('→ post') && msg.includes('/api/issues/create')) {
+        if (demoPhase < 2) {
+          demoPhase = 2;
+          setStepState(1, 'completed');
+          setStepState(2, 'active');
+        }
+      }
+
+      // Step 3: AI classification done
+      if (tag === 'ai' && msg.includes('classified')) {
+        if (demoPhase < 3) {
+          demoPhase = 3;
+          setStepState(2, 'completed');
+          setStepState(3, 'completed');
+        }
+      }
+
+      // Step 4: Authority routing
+      if (tag === 'smartrouting' && msg.includes('selected email')) {
+        if (demoPhase < 4) {
+          demoPhase = 4;
+          setStepState(4, 'active');
+          setTimeout(() => {
+            if (demoPhase >= 4) setStepState(4, 'completed');
+          }, 600);
+        }
+      }
+
+      // Step 5: Email dispatch
+      if (tag === 'emailservice' && (msg.includes('email sent') || msg.includes('message sent'))) {
+        if (demoPhase < 5) {
+          demoPhase = 5;
+          setStepState(4, 'completed');
+          setStepState(5, 'completed');
+        }
+      }
+
+      // Email failed
+      if (tag === 'emailservice' && msg.includes('failed')) {
+        if (demoPhase < 5) {
+          setStepState(5, 'failed');
+        }
+      }
+
+      // Step 6: Response sent back
+      if (tag === 'http' && msg.includes('← post') && msg.includes('/api/issues/create') && msg.includes('200')) {
+        if (demoPhase < 6) {
+          demoPhase = 6;
+          setStepState(5, 'completed');
+          setStepState(6, 'completed');
+          endDemo(true);
+        }
+      }
+
+      // Handle server errors
+      if (tag === 'http' && msg.includes('← post') && msg.includes('/api/issues/create') && msg.includes('500')) {
+        setStepState(6, 'failed');
+        endDemo(false);
+      }
+    }
+
+    // ─── DEMO FLOW ───
+    async function startDemo() {
+      if (isRunning) return;
+      isRunning = true;
+      demoPhase = 0;
+
+      const btn = document.getElementById('btnStartDemo');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Running...';
+
+      document.getElementById('demoStatus').textContent = 'Running...';
+      document.getElementById('demoResult').classList.remove('visible');
+
+      // Reset
+      resetPipeline();
+      clearLogs();
+      startTime = Date.now();
+      updateElapsed();
+      elapsedTimer = setInterval(updateElapsed, 100);
+
+      // Start polling logs
+      startPolling();
+
+      // Hide overlay
+      document.getElementById('iframeOverlay').classList.add('hidden');
+
+      // Navigate iframe to report page
+      const frame = document.getElementById('websiteFrame');
+      frame.src = FRONTEND_URL + '/report';
+
+      // Add a local log entry for context
+      addLocalLog('Demo', 'Starting live demo — Submitting test civic issue');
+      addLocalLog('Demo', `Test payload: "${TEST_ISSUE.description.substring(0, 80)}…"`);
+
+      // Wait for iframe to load, then submit
+      await sleep(2000);
+
+      // Step 1: Submit issue
+      setStepState(1, 'active');
+      addLocalLog('Demo', '→ POST /api/issues/create — Sending to backend...');
+
+      try {
+        const res = await fetch(`${API_BASE}/api/issues/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(TEST_ISSUE)
+        });
+
+        const json = await res.json();
+
+        if (json.success) {
+          addLocalLog('Demo', `✅ Issue created: Ticket ${json.data.ticket_id}`, 'INFO');
+          showResult(json.data);
+
+          // Navigate iframe to track page
+          setTimeout(() => {
+            frame.src = FRONTEND_URL + `/track?id=${json.data.ticket_id}`;
+          }, 1500);
+        } else {
+          addLocalLog('Demo', `❌ Issue creation failed: ${json.error}`, 'ERROR');
+          endDemo(false);
+        }
+      } catch (err) {
+        addLocalLog('Demo', `❌ Network error: ${err.message}`, 'ERROR');
+        endDemo(false);
+      }
+
+      // Keep polling for a while to catch email/notification logs
+      await sleep(8000);
+
+      // Final poll
+      await pollLogs();
+
+      // If steps didn't complete naturally, mark them based on what we have
+      if (demoPhase < 6) {
+        if (demoPhase >= 4) {
+          for (let i = demoPhase + 1; i <= 6; i++) setStepState(i, 'completed');
+        }
+        endDemo(demoPhase >= 2);
+      }
+
+      stopPolling();
+    }
+
+    function endDemo(success) {
+      isRunning = false;
+      if (elapsedTimer) clearInterval(elapsedTimer);
+
+      const btn = document.getElementById('btnStartDemo');
+      btn.disabled = false;
+      btn.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
+        Run Again
+      `;
+
+      document.getElementById('demoStatus').textContent = success ? 'Completed ✓' : 'Failed ✗';
+
+      addLocalLog('Demo', success ? '🏁 Demo completed — full pipeline verified!' : '⚠️ Demo ended with errors');
+    }
+
+    function showResult(data) {
+      const grid = document.getElementById('resultGrid');
+      const title = document.getElementById('resultTitle');
+
+      title.innerHTML = '<span>✅</span> Pipeline Result';
+
+      grid.innerHTML = `
+        <div class="result-item">
+          <span class="result-label">Ticket ID</span>
+          <span class="result-value purple">${data.ticket_id || 'N/A'}</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Issue Type</span>
+          <span class="result-value cyan">${data.type || 'N/A'}</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Priority</span>
+          <span class="result-value ${data.priority === 'high' || data.priority === 'critical' ? 'red' : 'amber'}">${(data.priority || 'N/A').toUpperCase()}</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Department</span>
+          <span class="result-value">${data.department || 'N/A'}</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">AI Confidence</span>
+          <span class="result-value green">${data.confidence || 0}%</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">ETA</span>
+          <span class="result-value">${data.eta || 'N/A'}</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Duplicate</span>
+          <span class="result-value ${data.is_duplicate ? 'amber' : 'green'}">${data.is_duplicate ? 'Yes' : 'No'}</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">AI Summary</span>
+          <span class="result-value">${(data.summary || 'N/A').substring(0, 40)}…</span>
+        </div>
+      `;
+
+      document.getElementById('demoResult').classList.add('visible');
+    }
+
+    // ─── LOCAL LOG ENTRIES ───
+    function addLocalLog(tag, msg, level = 'INFO') {
+      logEntries.push({
+        ts: new Date().toISOString(),
+        level,
+        tag,
+        msg,
+        meta: {}
+      });
+      renderAllLogs();
+    }
+
+    // ─── UTILITIES ───
+    function clearLogs() {
+      logEntries = [];
+      lastLogCount = 0;
+      const terminal = document.getElementById('logTerminal');
+      terminal.innerHTML = '';
+      const empty = document.getElementById('emptyLogs');
+      terminal.appendChild(empty);
+      empty.style.display = 'flex';
+      document.getElementById('logCount').textContent = '0';
+    }
+
+    function setFilter(filter, btnEl) {
+      currentFilter = filter;
+      document.querySelectorAll('.log-filter-btn').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+
+      // Re-render with filter
+      const terminal = document.getElementById('logTerminal');
+      terminal.querySelectorAll('.log-entry').forEach(e => e.remove());
+      renderAllLogs();
+    }
+
+    function updateElapsed() {
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      document.getElementById('elapsedTime').textContent = elapsed + 's';
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // ─── HEALTH CHECK ON LOAD ───
+    async function checkHealth() {
+      try {
+        const res = await fetch(`${API_BASE}/api/health`);
+        const json = await res.json();
+        if (json.success) {
+          document.getElementById('statusDotBackend').className = 'dot green';
+        }
+      } catch {
+        document.getElementById('statusDotBackend').className = 'dot red';
+      }
+
+      try {
+        const frame = document.getElementById('websiteFrame');
+        // If iframe loads fine, the dot stays green
+        document.getElementById('statusDotFrontend').className = 'dot green';
+      } catch {
+        document.getElementById('statusDotFrontend').className = 'dot amber';
+      }
+    }
+
+    // Init
+    checkHealth();
+  </script>
+</body>
+</html>

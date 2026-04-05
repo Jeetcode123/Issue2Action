@@ -1,0 +1,165 @@
+{
+  "timestamp": "2026-04-04T18:40:14.292Z",
+  "target": "http://localhost:3001",
+  "summary": {
+    "passed": 15,
+    "failed": 13,
+    "total": 28,
+    "avgMs": 651
+  },
+  "tests": [
+    {
+      "name": "GET /api/health returns ok",
+      "status": "PASS",
+      "ms": 69
+    },
+    {
+      "name": "POST /api/auth/signup creates a user",
+      "status": "FAIL",
+      "ms": 3053,
+      "error": "No userId returned from signup"
+    },
+    {
+      "name": "POST /api/auth/login works",
+      "status": "FAIL",
+      "ms": 595,
+      "error": "Login failed: Email verification required"
+    },
+    {
+      "name": "POST /api/auth/signup rejects missing password",
+      "status": "PASS",
+      "ms": 3
+    },
+    {
+      "name": "POST /api/issues/create submits an issue",
+      "status": "FAIL",
+      "ms": 0,
+      "error": "Test user required — signup/login must pass"
+    },
+    {
+      "name": "Issue creation returns AI confidence score",
+      "status": "FAIL",
+      "ms": 464,
+      "error": "Failed to fetch issue: Issue not found"
+    },
+    {
+      "name": "POST /api/issues/create rejects missing fields",
+      "status": "PASS",
+      "ms": 3
+    },
+    {
+      "name": "Issue has valid type classification",
+      "status": "FAIL",
+      "ms": 390,
+      "error": "Fetch failed: Issue not found"
+    },
+    {
+      "name": "Issue has priority correctly assigned",
+      "status": "FAIL",
+      "ms": 359,
+      "error": "Invalid priority: undefined"
+    },
+    {
+      "name": "Issue is assigned to a department",
+      "status": "FAIL",
+      "ms": 404,
+      "error": "Department should be assigned by AI routing"
+    },
+    {
+      "name": "GET /api/admin/authorities returns authority list",
+      "status": "PASS",
+      "ms": 480
+    },
+    {
+      "name": "Email log exists for the created issue",
+      "status": "FAIL",
+      "ms": 5775,
+      "error": "Fetch failed: Issue not found"
+    },
+    {
+      "name": "GET /api/issues/:id returns full issue with timeline",
+      "status": "FAIL",
+      "ms": 365,
+      "error": "Fetch failed: Issue not found"
+    },
+    {
+      "name": "PATCH /api/issues/:id/status updates status",
+      "status": "PASS",
+      "ms": 2441
+    },
+    {
+      "name": "Issue reflects updated status",
+      "status": "FAIL",
+      "ms": 363,
+      "error": "Expected in_progress, got: undefined"
+    },
+    {
+      "name": "PATCH status rejects missing fields",
+      "status": "PASS",
+      "ms": 2
+    },
+    {
+      "name": "Submitting a similar issue triggers duplicate detection",
+      "status": "FAIL",
+      "ms": 0,
+      "error": "Test user required"
+    },
+    {
+      "name": "Notifications were created for the user",
+      "status": "FAIL",
+      "ms": 0,
+      "error": "Test user required"
+    },
+    {
+      "name": "Unread count matches actual unread notifications",
+      "status": "PASS",
+      "ms": 728
+    },
+    {
+      "name": "Mark notification as read works",
+      "status": "PASS",
+      "ms": 398
+    },
+    {
+      "name": "Mark all notifications as read works",
+      "status": "PASS",
+      "ms": 967
+    },
+    {
+      "name": "GET /api/issues/NONEXISTENT returns 404",
+      "status": "PASS",
+      "ms": 479
+    },
+    {
+      "name": "POST to unknown route returns 404",
+      "status": "PASS",
+      "ms": 2
+    },
+    {
+      "name": "POST /api/issues/create with malformed body returns 400",
+      "status": "PASS",
+      "ms": 1
+    },
+    {
+      "name": "GET /api/users/invalid-user/notifications handles gracefully",
+      "status": "PASS",
+      "ms": 493
+    },
+    {
+      "name": "GET /api/admin/logs returns recent logs",
+      "status": "PASS",
+      "ms": 3
+    },
+    {
+      "name": "GET /api/issues/public returns issues",
+      "status": "PASS",
+      "ms": 393
+    },
+    {
+      "name": "GET /api/users/:userId/issues returns user issues",
+      "status": "FAIL",
+      "ms": 0,
+      "error": "Test user required"
+    }
+  ]
+}

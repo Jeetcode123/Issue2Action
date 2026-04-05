@@ -1,0 +1,157 @@
+{
+  "timestamp": "2026-04-04T18:51:34.081Z",
+  "target": "http://localhost:3001",
+  "summary": {
+    "passed": 29,
+    "failed": 0,
+    "total": 29,
+    "avgMs": 1120
+  },
+  "tests": [
+    {
+      "name": "GET /api/health returns ok",
+      "status": "PASS",
+      "ms": 52
+    },
+    {
+      "name": "POST /api/auth/signup creates a user",
+      "status": "PASS",
+      "ms": 1199
+    },
+    {
+      "name": "POST /api/auth/login works",
+      "status": "PASS",
+      "ms": 652
+    },
+    {
+      "name": "Fallback: Get existing user from database",
+      "status": "PASS",
+      "ms": 2623
+    },
+    {
+      "name": "POST /api/auth/signup rejects missing password",
+      "status": "PASS",
+      "ms": 2
+    },
+    {
+      "name": "POST /api/issues/create submits an issue",
+      "status": "PASS",
+      "ms": 3610
+    },
+    {
+      "name": "Issue creation returns AI confidence score",
+      "status": "PASS",
+      "ms": 1187
+    },
+    {
+      "name": "POST /api/issues/create rejects missing fields",
+      "status": "PASS",
+      "ms": 2
+    },
+    {
+      "name": "Issue has valid type classification",
+      "status": "PASS",
+      "ms": 776
+    },
+    {
+      "name": "Issue has priority correctly assigned",
+      "status": "PASS",
+      "ms": 792
+    },
+    {
+      "name": "Issue is assigned to a department",
+      "status": "PASS",
+      "ms": 836
+    },
+    {
+      "name": "GET /api/admin/authorities returns authority list",
+      "status": "PASS",
+      "ms": 372
+    },
+    {
+      "name": "Email log exists for the created issue",
+      "status": "PASS",
+      "ms": 6042
+    },
+    {
+      "name": "GET /api/issues/:id returns full issue with timeline",
+      "status": "PASS",
+      "ms": 779
+    },
+    {
+      "name": "PATCH /api/issues/:id/status updates status",
+      "status": "PASS",
+      "ms": 1684
+    },
+    {
+      "name": "Issue reflects updated status",
+      "status": "PASS",
+      "ms": 960
+    },
+    {
+      "name": "PATCH status rejects missing fields",
+      "status": "PASS",
+      "ms": 2
+    },
+    {
+      "name": "Submitting a similar issue triggers duplicate detection",
+      "status": "PASS",
+      "ms": 4584
+    },
+    {
+      "name": "Notifications were created for the user",
+      "status": "PASS",
+      "ms": 2526
+    },
+    {
+      "name": "Unread count matches actual unread notifications",
+      "status": "PASS",
+      "ms": 728
+    },
+    {
+      "name": "Mark notification as read works",
+      "status": "PASS",
+      "ms": 775
+    },
+    {
+      "name": "Mark all notifications as read works",
+      "status": "PASS",
+      "ms": 727
+    },
+    {
+      "name": "GET /api/issues/NONEXISTENT returns 404",
+      "status": "PASS",
+      "ms": 417
+    },
+    {
+      "name": "POST to unknown route returns 404",
+      "status": "PASS",
+      "ms": 1
+    },
+    {
+      "name": "POST /api/issues/create with malformed body returns 400",
+      "status": "PASS",
+      "ms": 2
+    },
+    {
+      "name": "GET /api/users/invalid-user/notifications handles gracefully",
+      "status": "PASS",
+      "ms": 382
+    },
+    {
+      "name": "GET /api/admin/logs returns recent logs",
+      "status": "PASS",
+      "ms": 1
+    },
+    {
+      "name": "GET /api/issues/public returns issues",
+      "status": "PASS",
+      "ms": 414
+    },
+    {
+      "name": "GET /api/users/:userId/issues returns user issues",
+      "status": "PASS",
+      "ms": 358
+    }
+  ]
+}
