@@ -1,4 +1,4 @@
-export type IssueStatus = 'reported' | 'verified' | 'assigned' | 'in_progress' | 'resolved' | 'closed';
+export type IssueStatus = 'reported' | 'email_sent' | 'verified' | 'assigned' | 'in_progress' | 'resolved' | 'closed';
 export type IssuePriority = 'low' | 'medium' | 'high' | 'critical';
 
 export interface CreateIssuePayload {
@@ -15,40 +15,38 @@ export interface CreateIssuePayload {
 
 export interface CreatedIssue {
   id: string;
-  ticketId: string;
+  ticket_id: string;
   status: IssueStatus;
-  createdAt: string;
+  created_at: string;
 }
 
 export interface IssueWithTimeline extends CreatedIssue {
-  title: string;
+  type: string;
   description: string;
-  location?: string;
+  location_text?: string;
   ward?: string;
-  type?: string;
   priority?: IssuePriority;
-  images?: string[];
+  image_urls?: string[];
+  department?: string;
+  upvotes?: number;
   timeline: {
     id: string;
     status: string;
     message: string;
-    createdAt: string;
+    created_at: string;
   }[];
 }
 
 export interface PublicIssue {
   id: string;
-  ticketId: string;
-  title: string;
+  ticket_id?: string;
   description: string;
-  location?: string;
   location_text?: string;
   ward?: string;
   type?: string;
   status: IssueStatus;
   priority?: IssuePriority;
-  createdAt: string;
-  created_at?: string;
+  created_at: string;
   upvotes: number;
   authority_notified?: boolean;
 }
@@ -145,7 +143,7 @@ export async function getPublicIssues(filters?: { ward?: string, type?: string, 
 export async function upvoteIssue(ticketId: string, userId: string): Promise<{ upvotes: number }> {
   const res = await apiFetch<{ upvotes: number }>(`/api/issues/${ticketId}/upvote`, {
     method: 'POST',
-    body: JSON.stringify({ userId })
+    body: JSON.stringify({ user_id: userId })
   });
   if (!res.success) throw new Error(res.error || 'Failed to upvote issue');
   return res.data;
@@ -167,7 +165,7 @@ export async function getUserIssues(userId: string): Promise<UserIssue[]> {
 }
 
 export async function sendSupportMessage(name: string, email: string, message: string): Promise<void> {
-  const res = await apiFetch<void>('/api/support', {
+  const res = await apiFetch<void>('/api/support/message', {
     method: 'POST',
     body: JSON.stringify({ name, email, message })
   });

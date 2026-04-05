@@ -6,9 +6,31 @@ const { sendDispatchEmail } = require('./emailService');
 const { logger, requestLogger } = require('./logger');
 
 const app = express();
-app.use(cors());
+
+// CORS: explicitly allow frontend origin
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 app.use(requestLogger); // Log all API requests and responses
+
+// Global InsForge readiness guard — returns 503 if SDK not yet initialized
+app.use('/api', (req, res, next) => {
+  // Allow health check to always pass
+  if (req.path === '/health') return next();
+  if (!insforge) {
+    return res.status(503).json({
+      success: false,
+      data: null,
+      error: 'Server is still initializing. Please try again in a few seconds.'
+    });
+  }
+  next();
+});
 
 let insforge;
 
@@ -21,17 +43,22 @@ let insforge;
     });
     logger.info('Init', 'InsForge SDK client initialized successfully');
 
-    const connectRealtime = () => {
-      insforge.realtime.connect().then(() => {
-        insforge.realtime.subscribe('issues:feed').then(() => {
-          logger.info('Realtime', 'Connected and subscribed to issues:feed');
+    // Skip persistent realtime connection in Vercel serverless (ephemeral functions)
+    if (!process.env.VERCEL) {
+      const connectRealtime = () => {
+        insforge.realtime.connect().then(() => {
+          insforge.realtime.subscribe('issues:feed').then(() => {
+            logger.info('Realtime', 'Connected and subscribed to issues:feed');
+          });
+        }).catch(err => {
+          logger.error('Realtime', 'Failed to connect, retrying in 5s...', { error: err.message });
+          setTimeout(connectRealtime, 5000);
         });
-      }).catch(err => {
-        logger.error('Realtime', 'Failed to connect, retrying in 5s...', { error: err.message });
-        setTimeout(connectRealtime, 5000);
-      });
-    };
-    connectRealtime();
+      };
+      connectRealtime();
+    } else {
+      logger.info('Init', 'Vercel serverless mode — skipping persistent realtime connection');
+    }
   } catch (err) {
     logger.fatal('Init', 'Server initialization failed', { error: err.message, stack: err.stack });
   }
@@ -594,7 +621,7 @@ app.post('/api/issues/create', async (req, res) => {
 
     // Call AI to classify the issue
     const classification = await classifyIssue(description);
-    
+
     let aiSummary = classification.summary || description.substring(0, 50);
     let issueType = classification.type || 'Other';
     let priority = classification.priority || 'medium';
@@ -656,7 +683,7 @@ app.post('/api/issues/create', async (req, res) => {
     const { error: insertIssueErr } = await insforge.database
       .from('issues')
       .insert([newIssue]);
-      
+
     if (insertIssueErr) throw insertIssueErr;
 
     // === SMART ISSUE MERGING ===
@@ -670,7 +697,7 @@ app.post('/api/issues/create', async (req, res) => {
           .from('issues')
           .update({ master_issue_id: mergeData.master_issue_id })
           .eq('id', ticketId);
-        
+
         logger.info('MasterIssue', `Issue ${ticketId} merged into master ${mergeData.master_issue_id}`, {
           totalReports: mergeData.total_reports,
           priorityBoost: mergeData.priority_boost
@@ -704,30 +731,30 @@ app.post('/api/issues/create', async (req, res) => {
 
     // Before inserting timeline, if it IS a duplicate, we must increment the parent's upvotes and trigger bulk alert
     if (dupResult.is_duplicate && dupResult.parent_issue_id) {
-       try {
-         const { data: parentIssue } = await insforge.database
-           .from('issues')
-           .select('upvotes, department, ward, type, priority, location_text, description')
-           .eq('id', dupResult.parent_issue_id)
-           .single();
+      try {
+        const { data: parentIssue } = await insforge.database
+          .from('issues')
+          .select('upvotes, department, ward, type, priority, location_text, description')
+          .eq('id', dupResult.parent_issue_id)
+          .single();
 
-         if (parentIssue) {
-           const currentUpvotes = (parentIssue.upvotes || 0) + 1;
-           await insforge.database
-             .from('issues')
-             .update({ upvotes: currentUpvotes })
-             .eq('id', dupResult.parent_issue_id);
-             
-           // Bulk Reporting Smart Dispatch: Only trigger on specific thresholds to prevent spam
-           // e.g., 2, 5, 10, 50
-           const thresholds = [2, 5, 10, 25, 50];
-           if (thresholds.includes(currentUpvotes)) {
-               let bulkAuth = await resolveAuthority(parentIssue.department, parentIssue.location_text || parentIssue.ward || ward, parentIssue.type);
-               let targetEmail = bulkAuth.email;
-               console.log('Bulk dispatch → authority:', targetEmail, '| matchType:', bulkAuth.matchType);
+        if (parentIssue) {
+          const currentUpvotes = (parentIssue.upvotes || 0) + 1;
+          await insforge.database
+            .from('issues')
+            .update({ upvotes: currentUpvotes })
+            .eq('id', dupResult.parent_issue_id);
 
-           const bulkSubject = `[URGENT BULK REPORT] Reported by ${currentUpvotes} citizens: ${parentIssue.type}`;
-           const bulkBody = `
+          // Bulk Reporting Smart Dispatch: Only trigger on specific thresholds to prevent spam
+          // e.g., 2, 5, 10, 50
+          const thresholds = [2, 5, 10, 25, 50];
+          if (thresholds.includes(currentUpvotes)) {
+            let bulkAuth = await resolveAuthority(parentIssue.department, parentIssue.location_text || parentIssue.ward || ward, parentIssue.type);
+            let targetEmail = bulkAuth.email;
+            console.log('Bulk dispatch → authority:', targetEmail, '| matchType:', bulkAuth.matchType);
+
+            const bulkSubject = `[URGENT BULK REPORT] Reported by ${currentUpvotes} citizens: ${parentIssue.type}`;
+            const bulkBody = `
               <h2>CRITICAL: Multiple Reports Detected</h2>
               <p>This same issue has now been reported by <strong>${currentUpvotes} citizens</strong>.</p>
               <p><strong>Priority:</strong> <span style="color:red; font-weight:bold;">${parentIssue.priority}</span></p>
@@ -736,12 +763,12 @@ app.post('/api/issues/create', async (req, res) => {
               <br/>
               <p>Please address this cluster immediately.</p>
            `;
-             sendDispatchEmail(insforge, targetEmail, bulkSubject, bulkBody, dupResult.parent_issue_id, 0).catch(err => logger.error('BulkDispatch', 'Failed to send bulk email', { error: err.message, parentId: dupResult.parent_issue_id }));
-           }
-         }
-       } catch (err) {
-         logger.error('Duplicate', 'Failed to increment parent upvotes or dispatch bulk email', { error: err.message, parentId: dupResult.parent_issue_id });
-       }
+            sendDispatchEmail(insforge, targetEmail, bulkSubject, bulkBody, dupResult.parent_issue_id, 0).catch(err => logger.error('BulkDispatch', 'Failed to send bulk email', { error: err.message, parentId: dupResult.parent_issue_id }));
+          }
+        }
+      } catch (err) {
+        logger.error('Duplicate', 'Failed to increment parent upvotes or dispatch bulk email', { error: err.message, parentId: dupResult.parent_issue_id });
+      }
     }
 
     // Insert Timeline Event
@@ -753,7 +780,7 @@ app.post('/api/issues/create', async (req, res) => {
         event_type: 'created',
         created_by: 'system'
       }]);
-      
+
     if (eventErr) throw eventErr;
 
     // Publish Realtime Event
@@ -1025,7 +1052,7 @@ app.post('/api/issues/create', async (req, res) => {
                     : `Email dispatched to ${authority.name || department} (${targetEmail}).`,
                   event_type: 'updated',
                   created_by: 'system'
-                }]).catch(() => {});
+                }]).catch(() => { });
 
             } else {
               console.error('❌ Email dispatch returned failure for:', targetEmail);
@@ -1060,8 +1087,8 @@ app.post('/api/issues/create', async (req, res) => {
       }
 
     } catch (dispatchErr) {
-       console.error('❌ Merged email dispatch pipeline FAILED:', dispatchErr.message);
-       logger.error('MergedEmailDispatch', 'Merged email dispatch pipeline failed', { error: dispatchErr.message, ticketId });
+      console.error('❌ Merged email dispatch pipeline FAILED:', dispatchErr.message);
+      logger.error('MergedEmailDispatch', 'Merged email dispatch pipeline failed', { error: dispatchErr.message, ticketId });
     }
 
     return sendResponse(res, {
@@ -1173,6 +1200,8 @@ app.get('/api/issues/public', async (req, res) => {
   try {
     const { ward, type, status, time, limit = 50 } = req.query;
 
+    // InsForge readiness is now handled by global middleware
+
     let query = insforge.database
       .from('issues')
       .select('id, description, type, priority, status, location_text, latitude, longitude, upvotes, created_at, email_logs(status)')
@@ -1182,17 +1211,17 @@ app.get('/api/issues/public', async (req, res) => {
     if (ward) query = query.eq('ward', ward);
     if (type) query = query.eq('type', type);
     if (status) query = query.eq('status', status);
-    
+
     if (time && time !== 'all') {
-       const now = new Date();
-       if (time === 'today') {
-         now.setHours(now.getHours() - 24);
-       } else if (time === 'week') {
-         now.setDate(now.getDate() - 7);
-       } else if (time === 'month') {
-         now.setMonth(now.getMonth() - 1);
-       }
-       query = query.gte('created_at', now.toISOString());
+      const now = new Date();
+      if (time === 'today') {
+        now.setHours(now.getHours() - 24);
+      } else if (time === 'week') {
+        now.setDate(now.getDate() - 7);
+      } else if (time === 'month') {
+        now.setMonth(now.getMonth() - 1);
+      }
+      query = query.gte('created_at', now.toISOString());
     }
 
     const { data, error } = await query;
@@ -1215,13 +1244,13 @@ app.get('/api/issues/public', async (req, res) => {
 app.get('/api/issues/:ticketId', async (req, res) => {
   try {
     const { ticketId } = req.params;
-    
+
     const { data: issue, error: issueErr } = await insforge.database
       .from('issues')
       .select('*')
       .eq('id', ticketId)
       .single();
-      
+
     if (issueErr || !issue) {
       return sendResponse(res, null, 'Issue not found', 404);
     }
@@ -1244,7 +1273,7 @@ app.patch('/api/issues/:ticketId/status', async (req, res) => {
   try {
     const { ticketId } = req.params;
     const { status, message, updated_by } = req.body;
-    
+
     if (!status || !message) {
       return sendResponse(res, null, 'Status and message are required', 400);
     }
@@ -1272,7 +1301,7 @@ app.patch('/api/issues/:ticketId/status', async (req, res) => {
 
     // Publish Realtime Event
     insforge.realtime.publish('issues:feed', 'issue_update', { action: 'status_updated', ticketId, status }).catch(err => logger.error('Realtime', 'Failed to publish status update', { error: err.message, ticketId }));
-    
+
     // Trigger the notification service
     await sendNotification(ticketId, status);
     logger.info('StatusUpdate', `Issue ${ticketId} status updated to ${status}`, { ticketId, status });
@@ -1289,25 +1318,25 @@ app.post('/api/issues/:ticketId/authority-reply', async (req, res) => {
   try {
     const { ticketId } = req.params;
     const { status, message, authority_email } = req.body;
-    
+
     if (status) {
-       await insforge.database.from('issues').update({ status }).eq('id', ticketId);
+      await insforge.database.from('issues').update({ status }).eq('id', ticketId);
     }
-    
+
     await insforge.database.from('timeline_events').insert([{
-        issue_id: ticketId,
-        message: message,
-        event_type: 'authority_reply',
-        created_by: authority_email || 'Authority'
+      issue_id: ticketId,
+      message: message,
+      event_type: 'authority_reply',
+      created_by: authority_email || 'Authority'
     }]);
 
     if (authority_email) {
-       await insforge.database.from('email_logs')
-          .update({ response_received: true })
-          .eq('issue_id', ticketId)
-          .eq('authority_email', authority_email);
+      await insforge.database.from('email_logs')
+        .update({ response_received: true })
+        .eq('issue_id', ticketId)
+        .eq('authority_email', authority_email);
     }
-    
+
     insforge.realtime.publish('issues:feed', 'issue_update', { action: 'authority_reply', ticketId, status }).catch(err => logger.error('Realtime', 'Failed to publish authority reply', { error: err.message, ticketId }));
 
     return sendResponse(res, { success: true });
@@ -1322,11 +1351,11 @@ app.post('/api/issues/:ticketId/reply', async (req, res) => {
   try {
     const { ticketId } = req.params;
     const { message, user_id } = req.body;
-    
+
     if (!message || !user_id) {
-       return sendResponse(res, null, 'Message and user ID required', 400);
+      return sendResponse(res, null, 'Message and user ID required', 400);
     }
-    
+
     // Add timeline event
     const { error: timelineErr } = await insforge.database
       .from('timeline_events')
@@ -1338,15 +1367,15 @@ app.post('/api/issues/:ticketId/reply', async (req, res) => {
       }]);
 
     if (timelineErr) throw timelineErr;
-    
+
     // Trigger notification to authority if needed
     // Not strictly required for the assignment, but we publish realtime event to UI
     insforge.realtime.publish('issues:feed', 'issue_update', { action: 'user_reply', ticketId }).catch(err => logger.error('Realtime', 'Failed to publish user reply', { error: err.message, ticketId }));
 
     return sendResponse(res, { success: true });
   } catch (error) {
-     logger.error('UserReply', 'Failed to process user reply', { error: error.message, ticketId: req.params.ticketId });
-     return sendResponse(res, null, error.message, 500);
+    logger.error('UserReply', 'Failed to process user reply', { error: error.message, ticketId: req.params.ticketId });
+    return sendResponse(res, null, error.message, 500);
   }
 });
 
@@ -1366,9 +1395,9 @@ app.post('/api/issues/:ticketId/upvote', async (req, res) => {
       .select();
 
     if (upvoteErr && upvoteErr.code === '23505') {
-       return sendResponse(res, null, 'Already upvoted', 400);
+      return sendResponse(res, null, 'Already upvoted', 400);
     } else if (upvoteErr) {
-       throw upvoteErr;
+      throw upvoteErr;
     }
 
     // Increment upvotes in issue using RPC or fetching and updating
@@ -1477,34 +1506,34 @@ app.get('/api/users/:userId/notifications/unread-count', async (req, res) => {
 
 app.patch('/api/users/:userId/notifications/:notifId/read', async (req, res) => {
   try {
-     const { notifId, userId } = req.params;
-     const { error } = await insforge.database
-       .from('notifications')
-       .update({ is_read: true })
-       .eq('id', notifId)
-       .eq('user_id', userId);
-       
-     if (error) throw error;
-     return sendResponse(res, { success: true });
+    const { notifId, userId } = req.params;
+    const { error } = await insforge.database
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', notifId)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return sendResponse(res, { success: true });
   } catch (error) {
-     logger.error('Notifications', 'Failed to mark notification as read', { error: error.message, notifId: req.params.notifId });
-     return sendResponse(res, null, error.message, 500);
+    logger.error('Notifications', 'Failed to mark notification as read', { error: error.message, notifId: req.params.notifId });
+    return sendResponse(res, null, error.message, 500);
   }
 });
 
 app.post('/api/users/:userId/notifications/read-all', async (req, res) => {
   try {
-     const { userId } = req.params;
-     const { error } = await insforge.database
-       .from('notifications')
-       .update({ is_read: true })
-       .eq('user_id', userId);
-       
-     if (error) throw error;
-     return sendResponse(res, { success: true });
+    const { userId } = req.params;
+    const { error } = await insforge.database
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return sendResponse(res, { success: true });
   } catch (error) {
-     logger.error('Notifications', 'Failed to mark all notifications as read', { error: error.message, userId: req.params.userId });
-     return sendResponse(res, null, error.message, 500);
+    logger.error('Notifications', 'Failed to mark all notifications as read', { error: error.message, userId: req.params.userId });
+    return sendResponse(res, null, error.message, 500);
   }
 });
 
@@ -1512,11 +1541,11 @@ app.post('/api/users/:userId/notifications/read-all', async (req, res) => {
 app.post('/api/support/message', async (req, res) => {
   try {
     const { name, email, message } = req.body;
-    
+
     if (!name || !email || !message) {
       return sendResponse(res, null, 'Missing required fields', 400);
     }
-    
+
     const { error } = await insforge.database
       .from('support_messages')
       .insert([{ name, email, message }]);
@@ -1579,7 +1608,7 @@ app.post('/api/cron/escalate', async (req, res) => {
     }
 
     const escalatedLogs = [];
-    
+
     for (const log of logs) {
       // Check if original issue is still unresolved
       const { data: issue } = await insforge.database
@@ -1587,7 +1616,7 @@ app.post('/api/cron/escalate', async (req, res) => {
         .select('*')
         .eq('id', log.issue_id)
         .single();
-        
+
       if (!issue || issue.status === 'resolved' || issue.status === 'closed') {
         // Mark as no longer needing escalation
         await insforge.database.from('email_logs').update({ response_received: true }).eq('id', log.id);
@@ -1596,14 +1625,14 @@ app.post('/api/cron/escalate', async (req, res) => {
 
       // Time to escalate! Find a higher priority authority
       const nextLevel = (log.escalation_level || 0) + 1;
-      
+
       const escalationAuthority = await resolveAuthority(issue.department, issue.location_text || issue.ward, issue.type, nextLevel);
       let targetEmail = escalationAuthority.email;
       console.log('Escalation authority resolved:', targetEmail, '| matchType:', escalationAuthority.matchType);
       // If the resolver fell back to error/fallback, keep the original authority email
       if (escalationAuthority.matchType === 'error_fallback' || escalationAuthority.matchType === 'fallback') {
-          targetEmail = log.authority_email;
-          console.log('Escalation: keeping original authority email:', targetEmail);
+        targetEmail = log.authority_email;
+        console.log('Escalation: keeping original authority email:', targetEmail);
       }
 
       const subject = `[URGENT REMINDER/ESCALATION] Civic Issue Reported: ${issue.type} in ${issue.ward}`;
@@ -1617,7 +1646,7 @@ app.post('/api/cron/escalate', async (req, res) => {
       `;
 
       await sendDispatchEmail(insforge, targetEmail, subject, htmlBody, issue.id, nextLevel);
-      
+
       // === NOTIFICATION: ISSUE_ESCALATED ===
       if (issue.user_id) {
         createNotification({
@@ -1662,7 +1691,7 @@ app.get('/api/admin/authorities', async (req, res) => {
 app.post('/api/admin/authorities', async (req, res) => {
   try {
     const { name, department, locality, issue_type, email, phone, priority_level, is_active } = req.body;
-    
+
     if (!email || !department) {
       return sendResponse(res, null, 'Email and department are required', 400);
     }
@@ -1670,14 +1699,14 @@ app.post('/api/admin/authorities', async (req, res) => {
     const { data, error } = await insforge.database
       .from('authorities')
       .insert([{
-         name, 
-         department, 
-         locality, 
-         issue_type, 
-         email, 
-         phone, 
-         priority_level: priority_level || 1, 
-         is_active: is_active !== undefined ? is_active : true 
+        name,
+        department,
+        locality,
+        issue_type,
+        email,
+        phone,
+        priority_level: priority_level || 1,
+        is_active: is_active !== undefined ? is_active : true
       }])
       .select()
       .single();
@@ -1694,11 +1723,11 @@ app.put('/api/admin/authorities/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
-    
+
     if (Object.keys(updates).length > 0) {
-       updates.updated_at = new Date().toISOString();
+      updates.updated_at = new Date().toISOString();
     }
-    
+
     const { data, error } = await insforge.database
       .from('authorities')
       .update(updates)
@@ -1717,7 +1746,7 @@ app.put('/api/admin/authorities/:id', async (req, res) => {
 app.delete('/api/admin/authorities/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const { error } = await insforge.database
       .from('authorities')
       .delete()
@@ -1760,35 +1789,35 @@ app.post('/api/auth/signup', async (req, res) => {
     }
 
     const name = `${firstName || ''} ${lastName || ''}`.trim();
-    const { data, error } = await insforge.auth.signUp({ 
-      email, 
-      password, 
+    const { data, error } = await insforge.auth.signUp({
+      email,
+      password,
       name
     });
-    
+
     if (error) {
       return sendResponse(res, null, error.message || 'Registration failed', 400);
     }
 
     const userId = data.user?.id;
     if (userId) {
-       try {
-         await insforge.database.from('users').upsert([{ 
-           id: userId, 
-           email: email, 
-           name: name,
-           city_ward: cityWard,
-           created_at: new Date().toISOString()
-         }]);
-       } catch (dbErr) {
-          logger.error('Auth', 'Failed to sync user to database after signup', { error: dbErr.message, userId });
-        }
+      try {
+        await insforge.database.from('users').upsert([{
+          id: userId,
+          email: email,
+          name: name,
+          city_ward: cityWard,
+          created_at: new Date().toISOString()
+        }]);
+      } catch (dbErr) {
+        logger.error('Auth', 'Failed to sync user to database after signup', { error: dbErr.message, userId });
+      }
     }
 
-    return sendResponse(res, { 
-      token: data.accessToken || null, 
-      userId: userId, 
-      requireEmailVerification: data.requireEmailVerification 
+    return sendResponse(res, {
+      token: data.accessToken || null,
+      userId: userId,
+      requireEmailVerification: data.requireEmailVerification
     });
   } catch (error) {
     return sendResponse(res, null, error.message, 500);
@@ -1841,6 +1870,11 @@ process.on('unhandledRejection', (reason) => {
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  logger.info('Server', `REST API Server active on port ${PORT}`, { port: PORT, env: process.env.NODE_ENV || 'development' });
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    logger.info('Server', `REST API Server active on port ${PORT}`, { port: PORT, env: process.env.NODE_ENV || 'development' });
+  });
+}
+
+// Export for Vercel serverless function
+module.exports = app;

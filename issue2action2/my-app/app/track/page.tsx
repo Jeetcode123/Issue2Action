@@ -49,14 +49,14 @@ function TrackContent() {
              const mappedTimeline = specificIssue.timeline.map((t: any) => ({
                  sender: t.event_type === 'user_reply' ? 'You' : (t.created_by === 'system' ? 'System' : 'Municipal Team'),
                  text: t.message || `Status updated to ${t.status || 'unknown'}`,
-                 time: new Date(t.created_at || t.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                 time: new Date(t.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                  isUser: t.event_type === 'user_reply'
              }));
              setMessages(mappedTimeline.reverse());
           }
         } catch (err) {
           // Fallback if specific fetch fails but it's in public data
-          const found = publicData.find(i => i.id === id || i.ticketId === id);
+          const found = publicData.find(i => i.id === id || i.ticket_id === id);
           if (found) setActiveIssue(found);
         }
       }
@@ -121,7 +121,7 @@ function TrackContent() {
      setChatInput('');
      
      try {
-       await replyToIssue(activeIssue.id || activeIssue.ticketId, originalInput, userId);
+       await replyToIssue(activeIssue.id || activeIssue.ticket_id, originalInput, userId);
        // Mutate data implicitly through realtime picking it up, or if realtime is off, it stays optimistic.
      } catch (err) {
        // Rollback message
@@ -163,7 +163,7 @@ function TrackContent() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-[#0d1627] dark:text-white font-display flex items-center gap-2">
-            {activeIssue ? `Tracking Ticket #${(activeIssue.ticketId || activeIssue.id || '').substring(0, 8)}` : "Tracking Issue"}
+            {activeIssue ? `Tracking Ticket #${(activeIssue.ticket_id || activeIssue.id || '').substring(0, 8)}` : "Tracking Issue"}
             {isLoading && <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />}
             </h1>
         </div>
@@ -359,7 +359,7 @@ function TrackContent() {
                     <MapPin className="w-4 h-4" /> Issue Insight
                 </h3>
                 <p className="text-gray-800 dark:text-gray-200 text-sm mb-4 line-clamp-2">
-                    {activeIssue.description || activeIssue.title}
+                    {activeIssue.description}
                 </p>
                 
                 <div className="bg-gray-50 dark:bg-[#0f172a] border border-gray-100 dark:border-gray-800 rounded-xl p-4 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mt-4 shadow-inner">

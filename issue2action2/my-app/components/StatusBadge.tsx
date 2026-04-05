@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle, Clock, AlertCircle, Shield, User, HelpCircle } from 'lucide-react';
+import { CheckCircle, Clock, AlertCircle, Shield, User, HelpCircle, Mail } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { IssueStatus } from '@/lib/api';
 
@@ -15,7 +15,13 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className }) =
         return {
           label: 'Reported',
           icon: AlertCircle,
-          color: 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50',
+          color: 'bg-amber-50 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/50',
+        };
+      case 'email_sent':
+        return {
+          label: 'Email Sent',
+          icon: Mail,
+          color: 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50',
         };
       case 'verified':
         return {

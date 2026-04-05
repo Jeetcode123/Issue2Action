@@ -41,7 +41,6 @@ export default function MyReportsPage() {
 
   const filteredReports = reports.filter(report => {
     const matchesSearch = 
-      report.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
       report.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       report.id.toLowerCase().includes(searchQuery.toLowerCase());
     
@@ -167,7 +166,7 @@ export default function MyReportsPage() {
                   <div className="flex-1 min-w-0 flex flex-col">
                     <div className="mb-4">
                       <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                        {report.title || (`${report.type || 'Civic'} Complaint`)}
+                        {(`${report.type || 'Civic'} Complaint`)}
                       </h3>
                       <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-3">
                         {report.description || 'Detailed information is available in the tracking view.'}

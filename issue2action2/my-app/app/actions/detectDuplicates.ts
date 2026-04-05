@@ -12,7 +12,7 @@ export async function detectDuplicates(type: string, ward: string, description: 
     
     // Sort by recent and take top 5 for comparison
     const recentIssues = issues
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 5);
 
     if (recentIssues.length === 0) {
@@ -24,10 +24,10 @@ Compare the new civic complaint with a list of recent complaints in the same are
 Determine if the new complaint refers to the *exact same underlying problem* as any of the recent ones.
 Return ONLY valid JSON. No markdown. No explanation.
 Schema: { "is_duplicate": boolean, "parent_issue_id": string | null }
-(If it is a duplicate, use the ticketId of the matched issue as parent_issue_id, otherwise null)`;
+(If it is a duplicate, use the ticket_id of the matched issue as parent_issue_id, otherwise null)`;
 
     const recentContext = recentIssues.map(issue => 
-      `Issue ticketId: ${issue.ticketId}\nDescription: ${issue.description}`
+      `Issue ticket_id: ${issue.ticket_id}\nDescription: ${issue.description}`
     ).join('\n---\n');
 
     const userMessage = `New complaint:\n"${description}"\n\nRecent complaints in this area:\n${recentContext}`;

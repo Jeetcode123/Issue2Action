@@ -100,8 +100,8 @@ export default function ImpactDashboard() {
   // Fetch recent items for the live feed
   const recentFeed = [...issues]
     .sort((a, b) => {
-      const bTime = new Date(b.created_at || b.createdAt || 0).getTime();
-      const aTime = new Date(a.created_at || a.createdAt || 0).getTime();
+      const bTime = new Date(b.created_at || 0).getTime();
+      const aTime = new Date(a.created_at || 0).getTime();
       return bTime - aTime;
     })
     .slice(0, 4);

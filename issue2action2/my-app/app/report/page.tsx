@@ -296,12 +296,7 @@ export default function ReportIssuePage() {
        setSuccessMessage('Issue reported successfully! Redirecting...');
        
        // Redirect directly to the specific tracker page
-       // The API returns { data: { id, ticket_id, ... } } but createIssue handles .data internally
-       // Wait, `createIssue` returns `CreatedIssue` which has `{ id, ticketId, status, createdAt }`.
-       // Let's check what the backend is sending, the backend sends `{ id, ticket_id, status }`.
-       // `lib/api.ts` `fetcher` returns `json.data`.
-       // Let's grab `ticket_id` directly, or if `lib/api.ts` assumes `ticketId` then it's wrong, we'll try `(created as any).ticket_id || created.ticketId`.
-       const ticketIdForUrl = (created as any).ticket_id || created.ticketId || created.id;
+       const ticketIdForUrl = created.ticket_id || created.id;
        router.push(`/track?id=${ticketIdForUrl}`);
        
     } catch (err: any) {
