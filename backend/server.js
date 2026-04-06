@@ -15,8 +15,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// app.use(express.json());
-// app.use(requestLogger); // Log all API requests and responses
+app.use(express.json());
+app.use(requestLogger); // Log all API requests and responses
 
 // app.get("/", (req, res) => {
 //   res.status(200).json({
