@@ -4,7 +4,7 @@
  * Expected: AI → Road, Locality → Salt Lake, Authority found, Email sent to authority.email
  */
 
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
 
 async function testEmailRouting() {
   console.log('=== Issue2Action Email Routing Test ===\n');
@@ -29,7 +29,7 @@ async function testEmailRouting() {
     // We'll need a real user_id - try fetching from existing issues
     const issuesRes = await fetch(`${API_BASE}/issues/public?limit=5`);
     const issuesData = await issuesRes.json();
-    
+
     if (issuesData.success && issuesData.data.length > 0) {
       // Get user_id from an existing issue
       const issueId = issuesData.data[0].id;
@@ -39,7 +39,7 @@ async function testEmailRouting() {
         userId = issueData.data.user_id;
       }
     }
-    
+
     if (!userId) {
       console.log('⚠️  No existing user found, using placeholder UUID');
       userId = '00000000-0000-0000-0000-000000000001';
@@ -70,17 +70,17 @@ async function testEmailRouting() {
       })
     });
     const result = await res.json();
-    
+
     if (result.success) {
       console.log('✅ Issue created:', result.data.ticket_id);
       console.log('   AI Type:', result.data.type);
       console.log('   AI Department:', result.data.department);
       console.log('   AI Priority:', result.data.priority);
       console.log('   AI Confidence:', result.data.confidence);
-      
+
       // Check email_logs for this issue
       await new Promise(r => setTimeout(r, 3000)); // Wait for async email dispatch
-      
+
       const issueRes = await fetch(`${API_BASE}/issues/${result.data.ticket_id}`);
       const issueData = await issueRes.json();
       console.log('   Issue stored successfully:', !!issueData.data);
@@ -111,7 +111,7 @@ async function testEmailRouting() {
       })
     });
     const result = await res.json();
-    
+
     if (result.success) {
       console.log('✅ Issue created:', result.data.ticket_id);
       console.log('   AI Type:', result.data.type);
@@ -142,7 +142,7 @@ async function testEmailRouting() {
       })
     });
     const result = await res.json();
-    
+
     if (result.success) {
       console.log('✅ Issue created:', result.data.ticket_id);
       console.log('   AI Type:', result.data.type);
