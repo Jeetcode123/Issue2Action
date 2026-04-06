@@ -18,7 +18,7 @@ async function runDemo() {
         console.log(`   Payload: ${JSON.stringify(payload)}\n`);
 
         const startTime = Date.now();
-        const response = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL+'/api/issues/create' || 'http://localhost:3001/api/issues/create', {
+        const response = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL+'/api/issues/create', {
             method: 'POST',
             body: JSON.stringify(payload),
             headers: { 'Content-Type': 'application/json' }

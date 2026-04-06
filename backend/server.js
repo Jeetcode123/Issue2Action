@@ -1876,7 +1876,7 @@ process.on('unhandledRejection', (reason) => {
   });
 });
 
-const PORT = process.env.NEXT_PUBLIC_API_BASE_URL || 3001;
+const PORT = process.env.NEXT_PUBLIC_API_BASE_URL; //|| 3001;
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     logger.info('Server', `REST API Server active on port ${PORT}`, { port: PORT, env: process.env.NODE_ENV || 'development' });
