@@ -4,7 +4,7 @@
  * Expected: AI → Road, Locality → Salt Lake, Authority found, Email sent to authority.email
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL + "/api" || 'http://localhost:3001/api';
 
 async function testEmailRouting() {
   console.log('=== Issue2Action Email Routing Test ===\n');
