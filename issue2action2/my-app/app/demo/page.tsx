@@ -25,7 +25,7 @@ interface DemoResult {
 }
 
 // ─── CONFIG ───
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 const FRONTEND_URL = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
 const POLL_INTERVAL = 800;
 

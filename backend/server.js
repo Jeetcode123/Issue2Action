@@ -9,7 +9,12 @@ const app = express();
 
 // CORS: explicitly allow frontend origin
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://issue2action-ufj8.onrender.com',
+    /\.onrender\.com$/
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -1876,7 +1881,7 @@ process.on('unhandledRejection', (reason) => {
   });
 });
 
-const PORT = process.env.NEXT_PUBLIC_API_BASE_URL; //|| 3001;
+const PORT = process.env.PORT || 3001;
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     logger.info('Server', `REST API Server active on port ${PORT}`, { port: PORT, env: process.env.NODE_ENV || 'development' });
